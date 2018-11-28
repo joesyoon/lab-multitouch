@@ -42,13 +42,15 @@ class MainActivity : AppCompatActivity() {
 
         val x = event.x
         val y = event.y - supportActionBar!!.height //closer to center...
-
+        val index = MotionEventCompat.getActionIndex(event)
+        val count = MotionEventCompat.getPointerCount(event)
+        val pointerID:Float = MotionEventCompat.getPointerId(event, index) as Float
         val action = MotionEventCompat.getActionMasked(event)
         when (action) {
             MotionEvent.ACTION_DOWN //put finger down
             -> {
                 //Log.v(TAG, "finger down");
-
+                view!!.addTouch(pointerID, x, y)
                 val xAnim = ObjectAnimator.ofFloat(view!!.ball, "x", x)
                 xAnim.duration = 1000
                 val yAnim = ObjectAnimator.ofFloat(view!!.ball, "y", y)
@@ -65,15 +67,20 @@ class MainActivity : AppCompatActivity() {
                 return true
             }
             MotionEvent.ACTION_MOVE //move finger
-            ->
+            -> {
+                for(i in 0..count) {
+                    val movePID = MotionEventCompat.getPointerId(event, i) as Float
+                    view!!.moveTouch(movePID, x, y)
+                }
                 //Log.v(TAG, "finger move");
                 //                view.ball.cx = x;
                 //                view.ball.cy = y;
-                return true
+                return true}
             MotionEvent.ACTION_UP //lift finger up
                 , MotionEvent.ACTION_CANCEL //aborted gesture
                 , MotionEvent.ACTION_OUTSIDE //outside bounds
-            -> return super.onTouchEvent(event)
+            ->  {view!!.removeTouch(pointerID)
+                return super.onTouchEvent(event)}
             else -> return super.onTouchEvent(event)
         }
     }
